@@ -1,47 +1,96 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+type Todo = {
+  id: number
+  text: string
+  completed: boolean
+}
+
+const items = ref<Todo>([])
+const newItem = ref('')
+const filter = ref<'all' | 'active' | 'completed'>('all')
+let nextId = 1
+
+function addItem() {
+  if (newItem.value.trim()) {
+    items.value.push({
+      id: nextId++,
+      text: newItem.value.trim(),
+      completed: false
+    })
+    newItem.value = ''
+  }
+}
+
+function toggleCompleted(item: Todo) {
+  item.completed = !item.completed
+}
+
+const remaining = computed(() => {
+  return items.value.filter(item => !item.completed).length
+})
+
+const filteredItems = computed(() => {
+  if (filter.value === 'active') {
+    return items.value.filter(item => !item.completed)
+  }
+  if (filter.value === 'completed') {
+    return items.value.filter(item => item.completed)
+  }
+  return items.value
+})
+
+
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <div>
+    <h1>ToDo list</h1>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    <div>
+      <ul>
+        <li v-for="(item, i) in items" :key="i">{{ item }}
+          <!-- <button>Mark as completed</button> -->
+        </li>
+      </ul>
+
+      <input v-model="newItem" placeholder="Add item" />
+      <button @click="addItem">Add</button>
+
     </div>
-  </header>
 
-  <main>
-    <TheWelcome />
-  </main>
+    <div>
+      <button @click="filter = 'all'">All</button>
+      <button @click="filter = 'active'">Active</button>
+      <button @click="filter = 'completed'">Completed</button>
+    </div>
+
+
+    <!-- List -->
+    <ul>
+      <li v-for="item in filteredItems" :key="item.id" :class="{ completed: item.completed }">
+        {{ item.text }}
+        <button @click="toggleCompleted(item)">Done</button>
+      </li>
+    </ul>
+
+    <p>{{ remaining }} tasks left</p>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
+input {
+  margin: 0.5rem 0;
+  padding: 0.3rem;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+button {
+  /* margin-left: 0.5rem; */
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.completed {
+  text-decoration: line-through;
+  color: gray;
 }
 </style>
