@@ -1,96 +1,64 @@
-<script setup lang="ts">
-import { computed, ref } from 'vue'
+<script setup>
 
-type Todo = {
-  id: number
-  text: string
-  completed: boolean
+import { ref } from 'vue';
+const quotes = [
+  "The only limit to our realization of tomorrow is our doubts of today.",
+  "Do not wait to strike till the iron is hot, but make it hot by striking.",
+  "The future belongs to those who believe in the beauty of their dreams.",
+  "It does not matter how slowly you go as long as you do not stop.",
+  "Success is not final, failure is not fatal: It is the courage to continue that counts."
+];
+
+const currentQuote = ref(quotes[0]);
+
+function generateQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length)
+  currentQuote.value = quotes[randomIndex]
 }
 
-const items = ref<Todo>([])
-const newItem = ref('')
-const filter = ref<'all' | 'active' | 'completed'>('all')
-let nextId = 1
-
-function addItem() {
-  if (newItem.value.trim()) {
-    items.value.push({
-      id: nextId++,
-      text: newItem.value.trim(),
-      completed: false
-    })
-    newItem.value = ''
-  }
+function copyToClipboard() {
+  navigator.clipboard.writeText(currentQuote.value)
+    .then(() => alert('Quote copied to clipboard!'))
+    .catch(() => alert('Failed to copy quote to clipboard.'));
 }
-
-function toggleCompleted(item: Todo) {
-  item.completed = !item.completed
-}
-
-const remaining = computed(() => {
-  return items.value.filter(item => !item.completed).length
-})
-
-const filteredItems = computed(() => {
-  if (filter.value === 'active') {
-    return items.value.filter(item => !item.completed)
-  }
-  if (filter.value === 'completed') {
-    return items.value.filter(item => item.completed)
-  }
-  return items.value
-})
 
 
 </script>
 
 <template>
-  <div>
-    <h1>ToDo list</h1>
 
-    <div>
-      <ul>
-        <li v-for="(item, i) in items" :key="i">{{ item }}
-          <!-- <button>Mark as completed</button> -->
-        </li>
-      </ul>
-
-      <input v-model="newItem" placeholder="Add item" />
-      <button @click="addItem">Add</button>
-
+  <h2>Random Quote Generator</h2>
+  <div class="quote-container">
+    <p class="quote-text">"{{  currentQuote }}"</p>
+    <div class="buttons">
+      <button @click="generateQuote">New quote</button>
+      <button @click="copyToClipboard">Copy to clipboard</button>
     </div>
-
-    <div>
-      <button @click="filter = 'all'">All</button>
-      <button @click="filter = 'active'">Active</button>
-      <button @click="filter = 'completed'">Completed</button>
-    </div>
-
-
-    <!-- List -->
-    <ul>
-      <li v-for="item in filteredItems" :key="item.id" :class="{ completed: item.completed }">
-        {{ item.text }}
-        <button @click="toggleCompleted(item)">Done</button>
-      </li>
-    </ul>
-
-    <p>{{ remaining }} tasks left</p>
   </div>
 </template>
 
-<style scoped>
-input {
-  margin: 0.5rem 0;
-  padding: 0.3rem;
+<style>
+
+h2{
+  text-align: center;
+  margin-top: 10px;
+  color: white;
+}
+.quote-container {
+  text-align: center;
+  max-width: 500px;
+  margin: 100px auto;
+  font-family: sans-serif;
 }
 
-button {
-  /* margin-left: 0.5rem; */
+.quote-text {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.completed {
-  text-decoration: line-through;
-  color: gray;
+.buttons button {
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
 }
 </style>
